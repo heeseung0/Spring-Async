@@ -7,11 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="hacking-spring-boot-ch1-reactive" />
+        <module name="1. reactive" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="1. reactive" options="-parameters" />
       <module name="hacking-spring-boot-ch1-reactive" options="-parameters" />
     </option>
   </component>
