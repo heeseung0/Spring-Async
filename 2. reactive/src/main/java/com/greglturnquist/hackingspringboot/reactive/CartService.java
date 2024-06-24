@@ -16,20 +16,20 @@ public class CartService {
 
     Mono<Cart> addToCart(String cartId, String id) {
         return this.cartRepository.findById(cartId)
-                .defaultIfEmpty(new Cart(cartId))
+                .defaultIfEmpty(new Cart(cartId)).log("emptyCart")  //로그1
                 .flatMap(cart -> cart.getCartItems().stream()
                         .filter(cartItem -> cartItem.getItem().getId().equals(id))
                         .findAny()
                         .map(cartItem -> {
                             cartItem.increment();
-                            return Mono.just(cart);
+                            return Mono.just(cart).log("newCartItem");  //로그2
                         })
-                        .orElseGet(() -> this.itemRepository.findById(id)
-                                .map(CartItem::new)
-                                .doOnNext(cartItem -> cart.getCartItems().add(cartItem))
+                        .orElseGet(() -> this.itemRepository.findById(id).log("fetchedItem")    //로그3
+                                .map(CartItem::new).log("cartItem") //로그4
+                                .doOnNext(cartItem -> cart.getCartItems().add(cartItem)).log("addedCartItem")   //로그5
                                 .map(cartItem -> cart)
                         )
-                )
-                .flatMap(this.cartRepository::save);
+                ).log("cartWithAnotherItem")    //로그6
+                .flatMap(this.cartRepository::save).log("savedCart");    //로그7
     }
 }
