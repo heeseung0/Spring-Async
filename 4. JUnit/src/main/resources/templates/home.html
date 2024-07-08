@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hacking with Spring Boot - Getting Started</title>
+</head>
+<style>
+    th{
+        border:thick double #32a1ce;
+    }
+
+    td:nth-child(-n+3){
+        border: solid;
+    }
+    td:nth-child(n+4):nth-child(-n+5){
+        border: 4mm ridge rgba(211, 220, 50, .6);
+    }
+</style>
+<body>
+    <h1>Welcome to Hacking with Spring Boot!</h1>
+    <h2>Inventory Management</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:250px">Id</th>
+                <th style="width:250px">Name</th>
+                <th style="width:100px">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td th:text="${item.id}"></td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.price}"></td>
+            <td>
+                <form method="post" th:action="@{'/add/' + ${item.id}}">
+                    <input type="submit" value="Add to Cart" />
+                </form>
+            </td>
+            <td>
+                <form th:method="delete" th:action="@{'/delete/' + ${item.id}}">
+                    <input type="submit" value="Delete"/>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>My Cart</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:250px">Id</th>
+                <th style="width:250px">Name</th>
+                <th style="width:100px">Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cartItem : ${cart.cartItems}">
+            <td th:text="${cartItem.item.id}"></td>
+            <td th:text="${cartItem.item.name}"></td>
+            <td th:text="${cartItem.quantity}"></td>
+            <td>
+                <form th:method="delete" th:action="@{'/remove/' + ${cartItem.item.id}}">
+                    <input type="submit" value="-1"/>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <!-- end::2[] -->
+
+</body>
+</html>
