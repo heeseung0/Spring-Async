@@ -1,23 +1,33 @@
 package com.example.Security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import java.util.Arrays;
 
 @Configuration
+@EnableReactiveMethodSecurity
 public class SecurityConfig {
     //There is no PasswordEncoder mapped for the id "null" <<-- 에러 해결용
-    @Autowired PasswordEncoder passwordEncoder;
+
+    private BCryptPasswordEncoder passwordEncoder;
+
+    public SecurityConfig(BCryptPasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Bean
+    public static BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public ReactiveUserDetailsService userDetailsService(UserRepository repository) {
@@ -36,9 +46,7 @@ public class SecurityConfig {
     SecurityWebFilterChain myCustomSecurityPolicy(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(HttpMethod.POST, "/").hasRole(INVENTORY)//'/'로 들어오는 POST, '/**'로 들어오는 DELETE 요청이
-                        .pathMatchers(HttpMethod.DELETE, "/**").hasRole(INVENTORY)//ROLE_INVENTORY라는 역할을 가진 사용자로부터 전송되었을 때만 진입을 허용
-                        .anyExchange().authenticated()//위 규칙에 어긋나는 모든 요청은 이 지점에서 더 이상 전진할 수 없다. 인증을 반드시 거쳐야 한다.
+                        .anyExchange().authenticated()
                         .and()
                         .httpBasic()
                         .and()
@@ -51,6 +59,19 @@ public class SecurityConfig {
         return "ROLE_" + auth;
     }
 
+    //테스트용 사용자
+    @Bean
+    CommandLineRunner userLoader(MongoOperations operations) {
+        return args -> {
+            operations.save(new com.example.Security.User( //
+                    "greg", passwordEncoder().encode("password"), Arrays.asList(role(USER))));
+
+            operations.save(new com.example.Security.User( //
+                    "manager", passwordEncoder().encode("password"), Arrays.asList(role(USER), role(INVENTORY))));
+        };
+    }
+
+    /*
     //테스트용 사용자
     @Bean
     CommandLineRunner userLoader(MongoOperations operations) {
@@ -68,4 +89,5 @@ public class SecurityConfig {
             ));
         };
     }
+     */
 }
